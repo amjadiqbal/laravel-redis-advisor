@@ -1,0 +1,87 @@
+{
+    "name": "amjadiqbal/laravel-redis-advisor",
+    "description": "Read-only Redis and Valkey health advisor for Laravel: finds queues that can silently lose jobs to eviction, keys with no TTL, big keys, memory and fragmentation trouble, persistence turned off under queues, cache prefix collisions, Horizon backlog and session TTL drift, with the exact config line or command to fix each one. Artisan report with a CI exit code plus a Blade dashboard.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "amjadiqbal",
+        "laravel",
+        "laravel-package",
+        "redis",
+        "valkey",
+        "cache",
+        "queue",
+        "horizon",
+        "eviction",
+        "maxmemory",
+        "big-keys",
+        "ttl",
+        "phpredis",
+        "predis",
+        "redis-health"
+    ],
+    "homepage": "https://github.com/amjadiqbal/laravel-redis-advisor",
+    "authors": [
+        {
+            "name": "Amjad Iqbal",
+            "homepage": "https://amjad.com.pk",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/amjadiqbal/laravel-redis-advisor/issues",
+        "source": "https://github.com/amjadiqbal/laravel-redis-advisor",
+        "docs": "https://github.com/amjadiqbal/laravel-redis-advisor#readme"
+    },
+    "require": {
+        "php": "^8.3",
+        "illuminate/console": "^12.0|^13.0",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/http": "^12.0|^13.0",
+        "illuminate/redis": "^12.0|^13.0",
+        "illuminate/routing": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/view": "^12.0|^13.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.0",
+        "orchestra/testbench": "^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.0",
+        "predis/predis": "^2.0|^3.0"
+    },
+    "suggest": {
+        "ext-redis": "phpredis, the faster Redis client (or require predis/predis)",
+        "predis/predis": "The pure-PHP Redis client, if the phpredis extension is not installed"
+    },
+    "autoload": {
+        "psr-4": {
+            "AmjadIqbal\\RedisAdvisor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AmjadIqbal\\RedisAdvisor\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "AmjadIqbal\\RedisAdvisor\\RedisAdvisorServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "pint": "vendor/bin/pint --test",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=1G"
+    }
+}

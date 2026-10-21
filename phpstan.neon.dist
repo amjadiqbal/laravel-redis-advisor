@@ -1,0 +1,13 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - src
+    tmpDir: build/phpstan
+    ignoreErrors:
+        # Namespaced package view (redis-advisor::dashboard), registered in the service provider; Larastan only knows app views.
+        - identifier: argument.type
+          path: src/Http/DashboardController.php
+          message: '#view-string#'
