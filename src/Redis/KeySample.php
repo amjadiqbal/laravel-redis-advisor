@@ -32,10 +32,13 @@ final readonly class KeySample
         $keys = [];
         $memory = null;
         $truncated = false;
+        $memoryChecked = false;
 
         do {
             $reply = $connection->command('SCAN', $cursor, 'COUNT', $count);
             $cursor = (string) ($reply[0] ?? '0');
+
+            $page = [];
 
             foreach ((array) ($reply[1] ?? []) as $key) {
                 $key = (string) $key;
@@ -44,29 +47,53 @@ final readonly class KeySample
                     continue;
                 }
 
-                if (count($keys) >= $limit) {
+                if (count($keys) + count($page) >= $limit) {
                     $truncated = true;
 
                     continue;
                 }
 
                 $seen[$key] = true;
-                $ttl = (int) $connection->command('PTTL', $key);
+                $page[] = $key;
+            }
+
+            if ($page === []) {
+                continue;
+            }
+
+            // Ask once whether MEMORY USAGE is allowed, so a refusal is reported with its reason.
+            if ($memory === null && ! $memoryChecked) {
+                $memoryChecked = true;
+
+                try {
+                    $connection->command('MEMORY', 'USAGE', $page[0], 'SAMPLES', 5);
+                } catch (CheckUnavailable $e) {
+                    $memory = $e->getMessage();
+                }
+            }
+
+            // One round trip per page: PTTL (and MEMORY USAGE) for every key in it.
+            $commands = [];
+
+            foreach ($page as $key) {
+                $commands[] = ['PTTL', $key];
+
+                if ($memory === null) {
+                    $commands[] = ['MEMORY', 'USAGE', $key, 'SAMPLES', 5];
+                }
+            }
+
+            $replies = $connection->pipeline($commands);
+            $step = $memory === null ? 2 : 1;
+
+            foreach ($page as $i => $key) {
+                $ttl = (int) ($replies[$i * $step] ?? -2);
 
                 if ($ttl === -2) {
                     continue; // expired between SCAN and PTTL
                 }
 
-                $bytes = null;
-
-                if ($memory === null) {
-                    try {
-                        $bytes = (int) $connection->command('MEMORY', 'USAGE', $key, 'SAMPLES', 5);
-                    } catch (CheckUnavailable $e) {
-                        $memory = $e->getMessage();
-                    }
-                }
-
+                $bytes = $memory === null && isset($replies[$i * $step + 1]) ? (int) $replies[$i * $step + 1] : null;
                 $keys[] = new SampledKey($key, $ttl, $bytes);
             }
         } while ($cursor !== '0' && count($keys) < $limit);

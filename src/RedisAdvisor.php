@@ -48,7 +48,7 @@ final readonly class RedisAdvisor
 
         $topology = (new TopologyFactory($this->config, $this->redis, $environment))->make(
             $connections,
-            max(1, (int) ($thresholds['sample_keys'] ?? 1000)),
+            max(1, (int) ($thresholds['sample_keys'] ?? 10000)),
             max(10, (int) ($thresholds['scan_count'] ?? 1000)),
         );
 

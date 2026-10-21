@@ -141,7 +141,7 @@ it('finds sessions that outlive SESSION_LIFETIME', function () {
 
     Redis::connection('default')->setex('shop-cache-'.Str::random(40), 30 * 86400, 'payload');
     expect(found('session-ttl'))->toHaveCount(1)
-        ->and(found('session-ttl')[0])->toContain('1 sessions outlive SESSION_LIFETIME (120 minutes)');
+        ->and(found('session-ttl')[0])->toContain('1 session outlives SESSION_LIFETIME (120 minutes): up to 30 days left');
 });
 
 it('finds a server close to maxmemory', function () {

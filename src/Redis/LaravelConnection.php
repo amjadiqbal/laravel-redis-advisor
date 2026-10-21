@@ -9,6 +9,9 @@ use Illuminate\Redis\Connections\Connection as IlluminateConnection;
 use Illuminate\Redis\Connections\PhpRedisClusterConnection;
 use Illuminate\Redis\Connections\PredisClusterConnection;
 use Predis\ClientInterface as PredisClient;
+use Predis\Command\RawCommand;
+use Predis\Response\ErrorInterface as ErrorResponseInterface;
+use Predis\Response\Status;
 use Throwable;
 
 /**
@@ -116,6 +119,64 @@ final class LaravelConnection implements Connection
         }
 
         throw UnsupportedConnection::client($this->name, get_debug_type($client));
+    }
+
+    public function pipeline(array $commands): array
+    {
+        if ($commands === []) {
+            return [];
+        }
+
+        foreach ($commands as $command) {
+            ReadOnlyGuard::assertReadOnly((string) $command[0], array_slice($command, 1));
+        }
+
+        $client = $this->connection->client();
+
+        try {
+            if ($client instanceof \Redis) {
+                $literal = $client->getOption(\Redis::OPT_REPLY_LITERAL);
+                $client->setOption(\Redis::OPT_REPLY_LITERAL, true);
+
+                try {
+                    $pipe = $client->pipeline();
+
+                    foreach ($commands as $command) {
+                        $pipe->rawCommand(...$command);
+                    }
+
+                    $replies = (array) $pipe->exec();
+                } finally {
+                    $client->setOption(\Redis::OPT_REPLY_LITERAL, $literal);
+                }
+
+                return array_map(static fn (mixed $r): mixed => $r === false ? null : $r, array_values($replies));
+            }
+
+            if ($client instanceof PredisClient) {
+                $replies = (array) $client->pipeline(static function ($pipe) use ($commands): void {
+                    foreach ($commands as $command) {
+                        $pipe->executeCommand(RawCommand::create(...array_map('strval', $command)));
+                    }
+                });
+
+                return array_map(static fn (mixed $r): mixed => match (true) {
+                    $r instanceof ErrorResponseInterface => null,
+                    $r instanceof Status => $r->getPayload(),
+                    default => $r,
+                }, array_values($replies));
+            }
+        } catch (Throwable) {
+            // A pipeline the client or server refuses: fall back to one command at a time.
+        }
+
+        return array_map(function (array $command): mixed {
+            try {
+                return $this->command(...$command);
+            } catch (CheckUnavailable) {
+                return null;
+            }
+        }, $commands);
     }
 
     public function info(): array

@@ -15,6 +15,7 @@ use AmjadIqbal\RedisAdvisor\Severity;
 use AmjadIqbal\RedisAdvisor\Support\Bytes;
 use AmjadIqbal\RedisAdvisor\Support\Keys;
 use AmjadIqbal\RedisAdvisor\Support\Memory;
+use AmjadIqbal\RedisAdvisor\Support\Text;
 use Illuminate\Contracts\Config\Repository;
 
 /**
@@ -59,7 +60,7 @@ final class SessionTtl implements Check
         $lifetime = max(1, (int) $this->config->get('session.lifetime', 120)) * 60;
         $slack = $thresholds->int('session_ttl_slack_seconds', 60);
         $pattern = '~^'.preg_quote($usage->keyPrefix, '~').'[A-Za-z0-9]{40}$~';
-        $limit = $thresholds->int('sample_keys', 1000);
+        $limit = $thresholds->int('sample_keys', 10000);
         $cursor = '0';
         $sessions = $forever = $longer = 0;
         $longest = 0;
@@ -68,12 +69,15 @@ final class SessionTtl implements Check
             $reply = $connection->command('SCAN', $cursor, 'MATCH', Keys::glob($usage->keyPrefix).'*', 'COUNT', $thresholds->int('scan_count', 1000));
             $cursor = (string) ($reply[0] ?? '0');
 
-            foreach ((array) ($reply[1] ?? []) as $key) {
-                if ($sessions >= $limit || ! preg_match($pattern, (string) $key)) {
-                    continue;
-                }
+            $page = array_values(array_filter(
+                array_map('strval', (array) ($reply[1] ?? [])),
+                static fn (string $key): bool => (bool) preg_match($pattern, $key),
+            ));
+            $page = array_slice($page, 0, max(0, $limit - $sessions));
+            $ttls = $connection->pipeline(array_map(static fn (string $key): array => ['PTTL', $key], $page));
 
-                $ttl = (int) $connection->command('PTTL', (string) $key);
+            foreach ($ttls as $ttl) {
+                $ttl = (int) ($ttl ?? -2);
 
                 if ($ttl === -2) {
                     continue;
@@ -98,7 +102,7 @@ final class SessionTtl implements Check
                 category: $this->category(),
                 severity: Severity::Warning,
                 subject: 'sessions',
-                title: number_format($forever).' sessions never expire',
+                title: number_format($forever).($forever === 1 ? ' session never expires' : ' sessions never expire'),
                 detail: 'Laravel always stores a session with a TTL, so something else wrote or PERSISTed these. They stay logged in for good and are never cleaned up.',
                 fix: "# give them the normal lifetime (this package does not run it)\n".Keys::cli($connection->server()->address, $connection->database())
                     .' --scan --pattern '.escapeshellarg(Keys::glob($usage->keyPrefix).'*').' | while read -r key; do '
@@ -115,7 +119,7 @@ final class SessionTtl implements Check
                 category: $this->category(),
                 severity: $share >= 0.1 ? Severity::Warning : Severity::Notice,
                 subject: 'session.lifetime',
-                title: number_format($longer)." sessions outlive SESSION_LIFETIME ({$minutes} minutes): up to ".intdiv($longest, 60).' minutes left',
+                title: number_format($longer).($longer === 1 ? ' session outlives' : ' sessions outlive')." SESSION_LIFETIME ({$minutes} minutes): up to ".Text::duration($longest).' left',
                 detail: 'Each request saves the session with a TTL of session.lifetime. A longer TTL means a server, worker or old deploy writes sessions with a longer lifetime than this one: '
                     .'people stay logged in longer than you set, or get logged out at different times depending on the server that answered. '
                     .'If you lowered SESSION_LIFETIME recently, idle sessions keep their old TTL until they expire, and this clears up by itself.',

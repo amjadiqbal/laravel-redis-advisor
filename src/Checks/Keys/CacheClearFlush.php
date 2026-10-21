@@ -12,6 +12,7 @@ use AmjadIqbal\RedisAdvisor\Redis\Role;
 use AmjadIqbal\RedisAdvisor\Redis\Topology;
 use AmjadIqbal\RedisAdvisor\Redis\Usage;
 use AmjadIqbal\RedisAdvisor\Severity;
+use AmjadIqbal\RedisAdvisor\Support\Text;
 
 /**
  * Queues, sessions or Horizon in the same Redis database as a cache store.
@@ -57,7 +58,7 @@ final class CacheClearFlush implements Check
             }
 
             $jobs = array_filter($victims, static fn (Usage $u): bool => in_array($u->role, [Role::Queue, Role::Horizon], true)) !== [];
-            $lost = implode(' and ', array_map(static fn (Usage $u): string => $u->label(), $victims));
+            $lost = Text::list(array_map(static fn (Usage $u): string => $u->label(), $victims));
             $db = $connection->database();
 
             $findings[] = new Finding(

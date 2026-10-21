@@ -91,7 +91,7 @@ return [
 
     'thresholds' => [
         // Key sampling: SCAN in batches of scan_count, up to sample_keys keys per database
-        'sample_keys' => 1000,
+        'sample_keys' => 10000,
         'scan_count' => 1000,
 
         // Keys

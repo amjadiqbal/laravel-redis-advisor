@@ -15,6 +15,7 @@ use AmjadIqbal\RedisAdvisor\Redis\Topology;
 use AmjadIqbal\RedisAdvisor\Redis\Usage;
 use AmjadIqbal\RedisAdvisor\Severity;
 use AmjadIqbal\RedisAdvisor\Support\Keys;
+use AmjadIqbal\RedisAdvisor\Support\Text;
 
 /**
  * Whether queued jobs and sessions survive a restart, and whether saving still works.
@@ -80,7 +81,7 @@ final class Persistence implements Check
             }
 
             $jobs = array_filter($durable, static fn (Usage $u): bool => in_array($u->role, [Role::Queue, Role::Horizon], true)) !== [];
-            $what = implode(' and ', array_map(static fn (Usage $u): string => $u->label(), $durable));
+            $what = Text::list(array_map(static fn (Usage $u): string => $u->label(), $durable));
 
             $findings[] = new Finding(
                 check: $this->id(),
@@ -92,7 +93,7 @@ final class Persistence implements Check
                     .($jobs ? 'every queued and delayed job is lost without a trace' : 'everyone is logged out')
                     .'. The append-only file with fsync every second loses at most a second of writes. '
                     .'On ElastiCache or MemoryDB, use Multi-AZ with automatic failover and backups instead (AOF is not offered there).',
-                fix: "# redis.conf on {$address}\nappendonly yes\nappendfsync everysec\n\n# or at runtime, then save it to redis.conf (this package does not run these):\nCONFIG SET appendonly yes\nCONFIG REWRITE",
+                fix: "# redis.conf on {$address}\nappendonly yes\nappendfsync everysec\n\n# or at runtime, then save it to redis.conf (CONFIG REWRITE needs Redis started with a config file;\n# this package does not run these):\nCONFIG SET appendonly yes\nCONFIG REWRITE",
                 evidence: ['holds' => $what],
             );
         }
@@ -128,7 +129,7 @@ final class Persistence implements Check
             }
 
             throw new CheckUnavailable(
-                $e->getMessage().' INFO alone cannot tell whether snapshots are configured.',
+                rtrim($e->getMessage(), '.').'. INFO alone cannot tell whether snapshots are configured.',
                 $e->howToEnable ?? "Check snapshot and backup settings in your provider's console.",
             );
         }

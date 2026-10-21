@@ -25,7 +25,7 @@ final class Topology
         private readonly array $connections,
         private readonly array $usages,
         private readonly array $failures = [],
-        private readonly int $sampleLimit = 1000,
+        private readonly int $sampleLimit = 10000,
         private readonly int $scanCount = 1000,
     ) {}
 

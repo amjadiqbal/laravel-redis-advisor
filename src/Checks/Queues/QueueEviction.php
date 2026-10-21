@@ -15,6 +15,7 @@ use AmjadIqbal\RedisAdvisor\Redis\Usage;
 use AmjadIqbal\RedisAdvisor\Severity;
 use AmjadIqbal\RedisAdvisor\Support\Bytes;
 use AmjadIqbal\RedisAdvisor\Support\Memory;
+use AmjadIqbal\RedisAdvisor\Support\Text;
 
 /**
  * Queued jobs on a server whose eviction policy may delete any key.
@@ -64,7 +65,7 @@ final class QueueEviction implements Check
 
             $caches = array_values(array_filter($usages, static fn (Usage $u): bool => $u->role === Role::Cache));
             $address = $server->server()->address;
-            $what = implode(' and ', array_map(static fn (Usage $u): string => $u->label(), $jobs));
+            $what = Text::list(array_map(static fn (Usage $u): string => $u->label(), $jobs));
             $ratio = $memory->ratio();
 
             if ($memory->max === 0) {
@@ -96,7 +97,7 @@ final class QueueEviction implements Check
                     .'Redis deletes any key it picks to make room, including the lists that hold queued jobs. '
                     .'No exception is thrown and no job is marked failed: the job just never runs. '
                     .($caches !== []
-                        ? 'The '.implode(' and ', array_map(static fn (Usage $u): string => $u->label(), $caches)).' fills the same memory, so cache growth is what triggers it. '
+                        ? 'The '.Text::list(array_map(static fn (Usage $u): string => $u->label(), $caches)).' fills the same memory, so cache growth is what triggers it. '
                         : '')
                     .($memory->evicted > 0 ? number_format($memory->evicted).' keys have already been evicted since the server started. ' : '')
                     .'Memory is at '.Bytes::human($memory->used).' of '.Bytes::human($memory->max).' ('.Bytes::percent((float) $ratio).'). '

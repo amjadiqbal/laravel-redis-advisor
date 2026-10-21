@@ -32,6 +32,15 @@ interface Connection
     public function command(string $command, string|int ...$arguments): mixed;
 
     /**
+     * Several read commands in one round trip. A command the server rejects
+     * comes back as null; probe it with command() first when that matters.
+     *
+     * @param  list<list<string|int>>  $commands  Each: [command, ...arguments].
+     * @return list<mixed>
+     */
+    public function pipeline(array $commands): array;
+
+    /**
      * Every field of INFO, flattened ("used_memory" => "1048576", "db1" => "keys=3,expires=1,avg_ttl=0").
      *
      * @return array<string, string>

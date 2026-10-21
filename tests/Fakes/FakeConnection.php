@@ -71,6 +71,17 @@ final class FakeConnection implements Connection
         };
     }
 
+    public function pipeline(array $commands): array
+    {
+        return array_map(function (array $command): mixed {
+            try {
+                return $this->command(...$command);
+            } catch (CheckUnavailable) {
+                return null;
+            }
+        }, $commands);
+    }
+
     public function info(): array
     {
         return $this->server->info;

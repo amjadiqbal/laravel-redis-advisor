@@ -11,6 +11,7 @@ use AmjadIqbal\RedisAdvisor\Finding;
 use AmjadIqbal\RedisAdvisor\Redis\Role;
 use AmjadIqbal\RedisAdvisor\Redis\Topology;
 use AmjadIqbal\RedisAdvisor\Severity;
+use AmjadIqbal\RedisAdvisor\Support\Text;
 
 /**
  * Jobs piling up: how many wait, how long the oldest has waited, and reservations nobody came back for.
@@ -62,7 +63,7 @@ final class QueueBacklog implements Check
                     continue;
                 }
 
-                $waited = $oldest !== null ? ' (oldest waiting '.self::duration($oldest).')' : '';
+                $waited = $oldest !== null ? ' (oldest waiting '.Text::duration($oldest).')' : '';
 
                 $findings[] = new Finding(
                     check: $this->id(),
@@ -112,15 +113,5 @@ final class QueueBacklog implements Check
         $created = is_array($job) ? ($job['createdAt'] ?? null) : null;
 
         return is_numeric($created) ? max(0, time() - (int) $created) : null;
-    }
-
-    public static function duration(int $seconds): string
-    {
-        return match (true) {
-            $seconds >= 86400 => round($seconds / 86400, 1).' days',
-            $seconds >= 3600 => round($seconds / 3600, 1).' hours',
-            $seconds >= 60 => intdiv($seconds, 60).' minutes',
-            default => $seconds.' seconds',
-        };
     }
 }

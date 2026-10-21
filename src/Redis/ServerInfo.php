@@ -46,7 +46,7 @@ final readonly class ServerInfo
         return match (true) {
             $s >= 86400 => intdiv($s, 86400).' day'.(intdiv($s, 86400) === 1 ? '' : 's'),
             $s >= 3600 => intdiv($s, 3600).' hour'.(intdiv($s, 3600) === 1 ? '' : 's'),
-            default => intdiv($s, 60).' minutes',
+            default => intdiv($s, 60).' minute'.(intdiv($s, 60) === 1 ? '' : 's'),
         };
     }
 

@@ -14,6 +14,7 @@ use AmjadIqbal\RedisAdvisor\Redis\Topology;
 use AmjadIqbal\RedisAdvisor\Redis\Usage;
 use AmjadIqbal\RedisAdvisor\Severity;
 use AmjadIqbal\RedisAdvisor\Support\Keys;
+use AmjadIqbal\RedisAdvisor\Support\Text;
 
 /**
  * Two apps, or two stores, writing the same keys.
@@ -58,7 +59,9 @@ final class CachePrefix implements Check
                     title: "Another app writes to db {$db->database()} on {$db->server()->address}: keys starting '".Keys::display($prefix)."'",
                     detail: 'About '.number_format($redis->sample($db)->estimate($count))." keys here do not belong to this app's stores. "
                         .'Sharing one database means a cache:clear in either app empties both, and one prefix typo away, they read each other\'s cache. '
-                        .'Give each app its own database number (or its own Redis).',
+                        .'Give each app its own database number (or its own Redis). '
+                        .'If you changed APP_NAME or REDIS_PREFIX recently, these may be this app\'s own keys from before the change: '
+                        .'delete them once the queued jobs under the old prefix have run.',
                     laravel: $this->ownDatabase(),
                     evidence: ['foreign_prefix' => $prefix, 'keys_in_sample' => $count],
                 );
@@ -76,7 +79,7 @@ final class CachePrefix implements Check
 
             foreach ($byConnection as $name => $affected) {
                 $prefix = (string) $redis->connection($name)?->prefix();
-                $labels = implode(', ', array_map(static fn (Usage $u): string => $u->label(), $affected));
+                $labels = Text::list(array_map(static fn (Usage $u): string => $u->label(), $affected));
 
                 $findings[] = new Finding(
                     check: $this->id(),

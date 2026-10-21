@@ -21,6 +21,10 @@ place ([`ReadOnlyGuard`](src/Redis/ReadOnlyGuard.php)). It walks keys with `SCAN
 [![PHP Version](https://img.shields.io/packagist/php-v/amjadiqbal/laravel-redis-advisor?style=flat-square)](https://packagist.org/packages/amjadiqbal/laravel-redis-advisor)
 [![License](https://img.shields.io/packagist/l/amjadiqbal/laravel-redis-advisor.svg?style=flat-square)](LICENSE.md)
 
+<p align="center">
+  <img alt="The Redis Advisor dashboard on Redis 7: queued jobs that allkeys-lru can evict and a cache store whose cache:clear deletes the queue, each with the redis.conf line and the Laravel config that fix it" src="art/screenshot.png" width="100%">
+</p>
+
 ```bash
 composer require amjadiqbal/laravel-redis-advisor
 php artisan redis-advisor:report
@@ -176,7 +180,7 @@ Schedule::command('redis-advisor:report --fail-on=warning')->hourly()->emailOutp
 
 ## Reading the findings with care
 
-- **Key checks sample.** `keys-without-ttl`, `big-keys` and `cache-prefix` look at up to `sample_keys` (1,000)
+- **Key checks sample.** `keys-without-ttl`, `big-keys` and `cache-prefix` look at up to `sample_keys` (10,000)
   keys per database and scale counts up; each finding says how many keys it saw. `redis-cli --bigkeys` and
   `--memkeys` scan everything if you need certainty.
 - **Sampling does not disturb eviction.** It reads keys with `TYPE`, `PTTL` and `MEMORY USAGE`, which Redis

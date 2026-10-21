@@ -5,6 +5,7 @@ use AmjadIqbal\RedisAdvisor\Redis\ReadOnlyGuard;
 use AmjadIqbal\RedisAdvisor\Redis\ServerInfo;
 use AmjadIqbal\RedisAdvisor\Support\Bytes;
 use AmjadIqbal\RedisAdvisor\Support\Keys;
+use AmjadIqbal\RedisAdvisor\Support\Text;
 
 it('allows only read commands', function (string $command, array $args) {
     ReadOnlyGuard::assertReadOnly($command, $args);
@@ -51,4 +52,12 @@ it('formats sizes for people and for redis.conf', function () {
         ->and(Bytes::config(100 * 1024 ** 2))->toBe('256mb')
         ->and(Bytes::config(900 * 1024 ** 2))->toBe('1gb')
         ->and(Bytes::config(1.3 * 1024 ** 3))->toBe('1536mb');
+});
+
+it('joins lists and durations the way people write them', function () {
+    expect(Text::list(['a']))->toBe('a')
+        ->and(Text::list(['a', 'b', 'c']))->toBe('a, b and c')
+        ->and(Text::duration(60))->toBe('1 minute')
+        ->and(Text::duration(7200))->toBe('2 hours')
+        ->and(Text::duration(30 * 86400 - 1))->toBe('30 days');
 });

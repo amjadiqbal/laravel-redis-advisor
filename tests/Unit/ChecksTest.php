@@ -226,8 +226,8 @@ describe('session-ttl', function () {
         $findings = (new SessionTtl(config()))->run(shopApp($server), new Thresholds);
 
         expect(severities($findings))->toBe([Severity::Warning, Severity::Warning])
-            ->and($findings[0]->title)->toBe('1 sessions never expire')
-            ->and($findings[1]->title)->toContain('3 sessions outlive SESSION_LIFETIME (120 minutes)');
+            ->and($findings[0]->title)->toBe('1 session never expires')
+            ->and($findings[1]->title)->toContain('3 sessions outlive SESSION_LIFETIME (120 minutes): up to 30 days left');
     });
 
     it('is skipped when sessions are not in Redis', function () {
