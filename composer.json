@@ -20,7 +20,7 @@
         "predis",
         "redis-health"
     ],
-    "homepage": "https://github.com/amjadiqbal/laravel-redis-advisor",
+    "homepage": "https://amjad.com.pk/laravel/packages/laravel-redis-advisor",
     "authors": [
         {
             "name": "Amjad Iqbal",
@@ -31,7 +31,7 @@
     "support": {
         "issues": "https://github.com/amjadiqbal/laravel-redis-advisor/issues",
         "source": "https://github.com/amjadiqbal/laravel-redis-advisor",
-        "docs": "https://github.com/amjadiqbal/laravel-redis-advisor#readme"
+        "docs": "https://amjad.com.pk/laravel/packages/laravel-redis-advisor"
     },
     "require": {
         "php": "^8.3",

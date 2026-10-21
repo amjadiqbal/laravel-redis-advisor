@@ -17,6 +17,8 @@ fixes it**, as a Blade dashboard and as an artisan report that can fail CI.
 It never runs a fix. Every command it sends is on a short list of reads, and you can check that list in one
 place ([`ReadOnlyGuard`](src/Redis/ReadOnlyGuard.php)). It walks keys with `SCAN` in batches, never `KEYS *`.
 
+Docs and demo: https://amjad.com.pk/laravel/packages/laravel-redis-advisor
+
 [![Latest Version](https://img.shields.io/packagist/v/amjadiqbal/laravel-redis-advisor.svg?style=flat-square)](https://packagist.org/packages/amjadiqbal/laravel-redis-advisor)
 [![PHP Version](https://img.shields.io/packagist/php-v/amjadiqbal/laravel-redis-advisor?style=flat-square)](https://packagist.org/packages/amjadiqbal/laravel-redis-advisor)
 [![License](https://img.shields.io/packagist/l/amjadiqbal/laravel-redis-advisor.svg?style=flat-square)](LICENSE.md)
