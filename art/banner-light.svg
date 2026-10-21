@@ -1,0 +1,32 @@
+<svg width="1200" height="300" viewBox="0 0 1200 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#EEF0F8"/>
+    </linearGradient>
+    <linearGradient id="iconbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1A1F4A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" fill="url(#bg)"/>
+  <g transform="translate(60,75) scale(0.29297)">
+    <rect width="512" height="512" rx="112" fill="url(#iconbg)"/>
+    <rect x="64" y="96" width="384" height="312" rx="30" fill="#1E293B"/>
+    <path d="M64 126 a30 30 0 0 1 30 -30 H418 a30 30 0 0 1 30 30 V164 H64 Z" fill="#334155"/>
+    <rect x="96" y="122" width="60" height="16" rx="8" fill="#94A3B8"/>
+    <rect x="256" y="122" width="72" height="16" rx="8" fill="#94A3B8"/>
+    <rect x="370" y="122" width="44" height="16" rx="8" fill="#94A3B8"/>
+    <path d="M64 226 H448 M64 288 H448 M64 350 H448" stroke="#334155" stroke-width="4"/>
+    <path d="M236 164 V408 M350 164 V408" stroke="#334155" stroke-width="4"/>
+<circle cx="104" cy="195" r="11" fill="#F59E0B"/><rect x="128" y="189" width="64" height="12" rx="6" fill="#475569"/><rect x="256" y="189" width="84" height="12" rx="6" fill="#F59E0B"/><circle cx="392" cy="195" r="13" fill="none" stroke="#94A3B8" stroke-width="4"/><path d="M392 188 V195 H398" fill="none" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/><circle cx="104" cy="257" r="11" fill="#EF4444"/><rect x="128" y="251" width="84" height="12" rx="6" fill="#475569"/><rect x="256" y="251" width="44" height="12" rx="6" fill="#475569"/><path transform="translate(392,257)" d="M0 0 C-4 -9 -18 -9 -18 0 C-18 9 -4 9 0 0 C4 -9 18 -9 18 0 C18 9 4 9 0 0 Z" fill="none" stroke="#EF4444" stroke-width="4.5" stroke-linejoin="round"/><circle cx="104" cy="319" r="11" fill="#22C55E"/><rect x="128" y="313" width="52" height="12" rx="6" fill="#475569"/><rect x="256" y="313" width="60" height="12" rx="6" fill="#475569"/><circle cx="392" cy="319" r="13" fill="none" stroke="#94A3B8" stroke-width="4"/><path d="M392 312 V319 H398" fill="none" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/><circle cx="104" cy="381" r="11" fill="#22C55E"/><rect x="128" y="375" width="72" height="12" rx="6" fill="#475569"/><rect x="256" y="375" width="36" height="12" rx="6" fill="#475569"/><circle cx="392" cy="381" r="13" fill="none" stroke="#94A3B8" stroke-width="4"/><path d="M392 374 V381 H398" fill="none" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
+    <path d="M40 288 H200 L226 236 L258 344 L286 264 L304 288 H330" fill="none" stroke="#818CF8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="382" cy="376" r="78" fill="#4F46E5" stroke="#0F172A" stroke-width="14"/>
+    <path d="M346 378 L372 404 L420 352" fill="none" stroke="#FFFFFF" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+  <text x="235" y="148" font-family="Helvetica, Arial, sans-serif" font-size="52" font-weight="700" fill="#0F172A">Laravel Redis Advisor</text>
+  <text x="238" y="188" font-family="Helvetica, Arial, sans-serif" font-size="21" font-weight="500" fill="#4338CA" letter-spacing="0.3">Read-only Redis health checks with the exact fix</text>
+  <g font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#334155" text-anchor="middle"><g transform="translate(238,214)"><rect width="150" height="32" rx="16.0" fill="#FFFFFF" stroke="#E2E8F0"/><text x="75.0" y="21.12">eviction &amp; TTLs</text></g><g transform="translate(398,214)"><rect width="166" height="32" rx="16.0" fill="#FFFFFF" stroke="#E2E8F0"/><text x="83.0" y="21.12">queues &amp; Horizon</text></g><g transform="translate(574,214)"><rect width="140" height="32" rx="16.0" fill="#FFFFFF" stroke="#E2E8F0"/><text x="70.0" y="21.12">Redis · Valkey</text></g></g>
+  <g transform="translate(870,52)"><rect width="300" height="54" rx="12" fill="#FFFFFF" stroke="#E2E8F0"/><circle cx="22" cy="27" r="7" fill="#EF4444"/><text x="40" y="23" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#334155">Queue shares DB with cache</text><text x="40" y="42" font-family="Menlo, Consolas, monospace" font-size="11.5" fill="#4338CA">maxmemory-policy noeviction</text></g><g transform="translate(870,116)"><rect width="300" height="54" rx="12" fill="#FFFFFF" stroke="#E2E8F0"/><circle cx="22" cy="27" r="7" fill="#F59E0B"/><text x="40" y="23" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#334155">18,240 keys with no TTL</text><text x="40" y="42" font-family="Menlo, Consolas, monospace" font-size="11.5" fill="#4338CA">Cache::put($k, $v, 3600);</text></g><g transform="translate(870,180)"><rect width="300" height="54" rx="12" fill="#FFFFFF" stroke="#E2E8F0"/><circle cx="22" cy="27" r="7" fill="#22C55E"/><text x="40" y="23" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#334155">Fragmentation ratio 1.08</text><text x="40" y="42" font-family="Menlo, Consolas, monospace" font-size="11.5" fill="#4338CA">no action</text></g>
+  <text x="1170" y="275" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#94A3B8">amjadiqbal/laravel-redis-advisor</text>
+</svg>
