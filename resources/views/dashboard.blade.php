@@ -131,6 +131,9 @@
             @endforeach
         </nav>
 
+        @foreach ($report->redis['not_inspected'] as $name => $why)
+            <div class="banner"><b>The '{{ $name }}' connection was not inspected</b>: {{ $why }}</div>
+        @endforeach
         @foreach ($report->redis['unreachable'] as $name => $why)
             <div class="banner error"><b>The '{{ $name }}' connection did not answer</b>, so its checks did not run: {{ $why }}</div>
         @endforeach

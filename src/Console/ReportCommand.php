@@ -86,6 +86,10 @@ final class ReportCommand extends Command
             $this->line("  {$server['name']} · <options=bold>{$server['address']}</> · up {$server['uptime']} · {$connections}");
         }
 
+        foreach ($report->redis['not_inspected'] as $name => $why) {
+            $this->line("  <fg=gray>Connection '{$name}' not inspected: {$why}</>");
+        }
+
         foreach ($report->redis['unreachable'] as $name => $why) {
             $this->line("  <fg=red>Connection '{$name}' did not answer:</> {$why}");
         }

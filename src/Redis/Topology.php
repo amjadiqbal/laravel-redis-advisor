@@ -20,6 +20,7 @@ final class Topology
      * @param  list<Connection>  $connections  The ones that answered.
      * @param  list<Usage>  $usages
      * @param  array<string, string>  $failures  Connection name => why it could not be reached.
+     * @param  array<string, string>  $notInspected  Connection name => why it was left out on purpose (a cluster).
      */
     public function __construct(
         private readonly array $connections,
@@ -27,6 +28,7 @@ final class Topology
         private readonly array $failures = [],
         private readonly int $sampleLimit = 10000,
         private readonly int $scanCount = 1000,
+        private readonly array $notInspected = [],
     ) {}
 
     /**
@@ -62,6 +64,16 @@ final class Topology
     public function failures(): array
     {
         return $this->failures;
+    }
+
+    /**
+     * Connections deliberately not inspected (Redis Cluster). Informational: never a finding.
+     *
+     * @return array<string, string>
+     */
+    public function notInspected(): array
+    {
+        return $this->notInspected;
     }
 
     /**

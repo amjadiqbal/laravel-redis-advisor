@@ -52,6 +52,10 @@ final readonly class RedisAdvisor
             max(10, (int) ($thresholds['scan_count'] ?? 1000)),
         );
 
+        if ($topology->connections() === [] && $topology->failures() === [] && $topology->notInspected() !== []) {
+            throw UnsupportedConnection::onlyClusters(array_keys($topology->notInspected()));
+        }
+
         if ($topology->connections() === [] && $topology->failures() === []) {
             throw UnsupportedConnection::nothingToInspect();
         }

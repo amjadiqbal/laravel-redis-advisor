@@ -85,10 +85,14 @@ under `allkeys-lru`. Four Laravel-specific traps are built in:
 - PHP 8.3+
 - Laravel 12 or 13
 - phpredis or predis (whichever your app already uses)
-- Redis or Valkey: tested on Redis 7.4, Redis 8 and Valkey 8. Older servers with `INFO`, `SCAN` and `MEMORY USAGE`
-  (Redis 4+) should work but are not tested.
+- Redis or Valkey. The repository's integration suite ([`scripts/integration.sh`](scripts/integration.sh), not part of
+  the Composer package) runs every check against Redis 7.4, Redis 8 and Valkey 8, each with phpredis and predis, plus
+  a Redis with `CONFIG` disabled. Older servers with `INFO`, `SCAN` and `MEMORY USAGE` (Redis 4+) should work but are
+  not tested.
 
-Redis Cluster connections are not inspected directly: point the advisor at one node with its own connection.
+Redis Cluster connections are not inspected. They are listed as "not inspected" in the report and the dashboard,
+never as a finding, so they cannot fail a CI run. To check a cluster, add a connection to one node and list it in
+`REDIS_ADVISOR_CONNECTIONS`.
 
 ## Installation
 
@@ -126,6 +130,18 @@ REDIS_ADVISOR_CONNECTIONS=advisor_default,advisor_cache
 
 Anything the user or the host does not allow appears as a skipped check, with the `ACL SETUSER` grant or the
 place in your provider's console where the value lives. Never as an error.
+
+### Managed hosts and disabled commands
+
+ElastiCache, MemoryDB and Upstash disable `CONFIG`, and some hosts refuse `MEMORY`. What that changes:
+
+- **Eviction policy and memory limit** come from `INFO`, so `queue-eviction`, `memory-usage` and the session
+  eviction notice still run.
+- **`persistence`** reads a failed last save from `INFO` on every host. Whether snapshots are configured needs
+  `CONFIG GET save` when AOF is off. Without it the check falls back to `INFO`: a server up for an hour or more,
+  with unsaved changes and no snapshot since it started, is reported. Otherwise the check is skipped with the reason.
+- **`big-keys`** is skipped when `MEMORY USAGE` is refused, with `redis-cli --bigkeys` / `--memkeys` as the way to
+  check by hand. The other key checks still run.
 
 ## The dashboard
 
@@ -165,7 +181,12 @@ Exit codes:
 |---|---|
 | `0` | No finding at or above `--fail-on` |
 | `1` | At least one finding at or above `--fail-on` (default `critical`; also `warning`, `notice`, `never`) |
-| `2` | Redis could not be inspected at all (no connection answered, or the app does not use Redis) |
+| `2` | Nothing could be inspected: no Redis connection answered, the app does not use Redis, or its only Redis connections are clusters |
+| `2` | An invalid option, such as `--fail-on=sometimes` |
+
+When only some connections fail, the run does not exit 2. Each one that did not answer becomes a `connections`
+finding: critical when it holds queues, sessions or Horizon, a warning otherwise, so `--fail-on` decides. Cluster
+connections are only listed as not inspected and never affect the exit code.
 
 The config checks run well in a deploy pipeline, against the app's real config:
 
@@ -182,11 +203,14 @@ Schedule::command('redis-advisor:report --fail-on=warning')->hourly()->emailOutp
 
 ## Reading the findings with care
 
-- **Key checks sample.** `keys-without-ttl`, `big-keys` and `cache-prefix` look at up to `sample_keys` (10,000)
-  keys per database and scale counts up; each finding says how many keys it saw. `redis-cli --bigkeys` and
-  `--memkeys` scan everything if you need certainty.
-- **Sampling does not disturb eviction.** It reads keys with `TYPE`, `PTTL` and `MEMORY USAGE`, which Redis
-  does not count as an access, so it does not change which keys an LRU or LFU policy evicts.
+- **Key checks sample.** `keys-without-ttl`, `big-keys` and `cache-prefix` share one sample per database: up to
+  `sample_keys` (10,000) keys walked with `SCAN`, with counts scaled up to the whole database. Each finding says how
+  many keys it saw. `redis-cli --bigkeys` and `--memkeys` scan everything if you need certainty.
+- **`session-ttl` samples on its own.** It walks only session keys (`SCAN MATCH` on the session prefix, up to
+  `sample_keys`), reads their `PTTL`, and reports the counts it saw without scaling.
+- **Sampling does not disturb eviction.** For each sampled key it sends `PTTL` and `MEMORY USAGE … SAMPLES 5`,
+  pipelined per `SCAN` page. `TYPE` is read only for the big keys it reports. Redis does not count any of these
+  as an access, so sampling does not change which keys an LRU or LFU policy evicts.
 - **One server is one opinion.** On a primary with replicas, run the report against each one you rely on.
 
 ## Configuration

@@ -14,7 +14,7 @@ use DateTimeImmutable;
 final readonly class Report
 {
     /**
-     * @param  array{servers: list<array<string, mixed>>, unreachable: array<string, string>}  $redis
+     * @param  array{servers: list<array<string, mixed>>, unreachable: array<string, string>, not_inspected: array<string, string>}  $redis
      * @param  list<CheckResult>  $results
      */
     public function __construct(
@@ -26,7 +26,7 @@ final readonly class Report
     /**
      * Which servers were inspected, through which connections, holding what.
      *
-     * @return array{servers: list<array<string, mixed>>, unreachable: array<string, string>}
+     * @return array{servers: list<array<string, mixed>>, unreachable: array<string, string>, not_inspected: array<string, string>}
      */
     public static function describe(Topology $redis): array
     {
@@ -54,7 +54,7 @@ final readonly class Report
             $servers[] = [...$server->server()->toArray(), 'name' => $server->server()->name(), 'uptime' => $server->server()->uptimeForHumans(), 'connections' => $connections];
         }
 
-        return ['servers' => $servers, 'unreachable' => $redis->failures()];
+        return ['servers' => $servers, 'unreachable' => $redis->failures(), 'not_inspected' => $redis->notInspected()];
     }
 
     /**
@@ -129,6 +129,7 @@ final readonly class Report
             'generated_at' => $this->generatedAt->format(DATE_ATOM),
             'servers' => $this->redis['servers'],
             'unreachable' => $this->redis['unreachable'],
+            'not_inspected' => $this->redis['not_inspected'],
             'summary' => [
                 'critical' => $this->count(Severity::Critical),
                 'warning' => $this->count(Severity::Warning),

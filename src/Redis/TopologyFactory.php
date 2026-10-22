@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AmjadIqbal\RedisAdvisor\Redis;
 
+use AmjadIqbal\RedisAdvisor\Exceptions\UnsupportedConnection;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Redis\Connections\Connection as IlluminateConnection;
@@ -32,19 +33,29 @@ final readonly class TopologyFactory
 
         $connections = [];
         $failures = [];
+        $notInspected = [];
 
         foreach ($names as $name) {
+            // Laravel resolves database.redis.<name> first and clusters.<name> second; a cluster is never connected to.
+            if ($this->config->get("database.redis.{$name}") === null && $this->config->get("database.redis.clusters.{$name}") !== null) {
+                $notInspected[$name] = 'a Redis Cluster connection, not inspected: add a connection to one node and list it in REDIS_ADVISOR_CONNECTIONS';
+
+                continue;
+            }
+
             try {
                 $connection = $this->connect($name);
                 $connection->server(); // INFO: proves it answers
 
                 $connections[] = $connection;
+            } catch (UnsupportedConnection $e) {
+                $notInspected[$name] = $e->getMessage();
             } catch (Throwable $e) {
                 $failures[$name] = trim(strtok($e->getMessage(), "\n") ?: $e->getMessage());
             }
         }
 
-        return new Topology($connections, $usages, $failures, $sampleLimit, $scanCount);
+        return new Topology($connections, $usages, $failures, $sampleLimit, $scanCount, $notInspected);
     }
 
     public function connect(string $name): Connection
